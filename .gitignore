@@ -216,3 +216,53 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Search & Detect Rover project files
+
+# Local database files
+rescue.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Python virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# React and Vite dependencies
+node_modules/
+Frontend/node_modules/
+
+# Frontend build files
+dist/
+Frontend/dist/
+Frontend/.vite/
+
+# Uploaded person images
+# These images are stored locally and should not be uploaded to GitHub.
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Environment files and private configuration
+.env
+.env.*
+!.env.example
+
+# VS Code local settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Local development files
+*.local
