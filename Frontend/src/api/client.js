@@ -1,5 +1,7 @@
 const DEFAULT_ERROR = 'Unable to connect to rover backend.'
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://search-detect-rover-1.onrender.com' : '')
+
 async function parseJson(response) {
   try {
     return await response.json()
@@ -10,7 +12,7 @@ async function parseJson(response) {
 
 async function request(url, options = {}) {
   try {
-    const response = await fetch(url, options)
+    const response = await fetch(`${BASE_URL}${url}`, options)
     const payload = await parseJson(response)
     if (!response.ok) {
       const detail = payload.detail || payload.message || DEFAULT_ERROR
