@@ -1,6 +1,7 @@
 const DEFAULT_ERROR = 'Unable to connect to rover backend.'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://search-detect-rover-1.onrender.com' : '')
+const rawBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://search-detect-rover-2.onrender.com' : '')
+export const BASE_URL = rawBase.replace(/\/+$/, '')
 
 async function parseJson(response) {
   try {
