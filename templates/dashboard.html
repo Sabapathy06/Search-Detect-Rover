@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rescue Robot Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #07111f;
+            --panel: rgba(10, 18, 34, 0.82);
+            --panel-strong: rgba(12, 24, 44, 0.95);
+            --text: #eef6ff;
+            --muted: #9fb2c9;
+            --accent: #58d7ff;
+            --accent-2: #f65f8d;
+            --success: #37d37d;
+            --warning: #ffb84d;
+            --danger: #ff4d5a;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #123558 0%, var(--bg) 45%, #04070e 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .page-shell { max-width: 1400px; margin: 0 auto; }
+        .hero {
+            display: flex; justify-content: space-between; align-items: center; gap: 24px;
+            padding: 24px 28px; border-radius: 24px; margin-bottom: 24px;
+            background: linear-gradient(135deg, rgba(88, 215, 255, 0.2), rgba(246, 95, 141, 0.16));
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.24);
+        }
+        .hero h1 { margin: 0 0 8px; font-size: 2rem; }
+        .hero p { margin: 0; color: var(--muted); max-width: 640px; }
+        .hero-badge { padding: 10px 16px; border-radius: 999px; background: rgba(255,255,255,0.1); font-weight: 700; color: var(--accent); }
+        .dashboard-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
+        .panel {
+            background: var(--panel); border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 24px; padding: 18px; box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+            backdrop-filter: blur(14px);
+        }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .panel-title { font-size: 1.05rem; font-weight: 700; }
+        .pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; font-size: 0.8rem; background: rgba(255,255,255,0.08); color: var(--muted); }
+        .camera-frame { border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); background: #050a14; }
+        .camera-frame img { display: block; width: 100%; height: auto; min-height: 320px; object-fit: cover; }
+        .stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .stat-card { padding: 12px; border-radius: 16px; background: rgba(255,255,255,0.05); }
+        .stat-card strong { display: block; font-size: 1.2rem; margin-top: 6px; }
+        .card-list { display: grid; gap: 12px; }
+        .person-card {
+            display: grid; grid-template-columns: 92px 1fr auto; gap: 12px;
+            padding: 12px; border-radius: 18px; background: var(--panel-strong);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .person-card:hover { transform: translateY(-2px); border-color: rgba(88, 215, 255, 0.45); }
+        .person-card img { width: 92px; height: 92px; border-radius: 14px; object-fit: cover; }
+        .meta { display: flex; flex-direction: column; gap: 6px; }
+        .meta .id { font-weight: 700; }
+        .meta .timestamp { color: var(--muted); font-size: 0.84rem; }
+        .status { display: inline-flex; align-items: center; width: fit-content; padding: 5px 9px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+        .status-critical { background: rgba(255,77,90,0.16); color: #ff8994; }
+        .status-serious { background: rgba(255,184,77,0.16); color: #ffd288; }
+        .status-minor { background: rgba(55,211,125,0.16); color: #9ff0c1; }
+        .status-stable { background: rgba(88,215,255,0.12); color: #84dfff; }
+        .status-rescued { background: rgba(55,211,125,0.20); color: #c0ffd3; }
+        .actions { display: flex; flex-direction: column; gap: 8px; }
+        button {
+            border: none; border-radius: 10px; padding: 8px 10px; font-weight: 700; cursor: pointer; color: white;
+        }
+        .btn-rescue { background: linear-gradient(135deg, var(--accent), #2db7e7); }
+        .btn-safe { background: linear-gradient(135deg, var(--success), #18b36f); }
+        .empty { padding: 14px; text-align: center; color: var(--muted); border-radius: 12px; background: rgba(255,255,255,0.04); }
+        .section-gap { margin-top: 18px; }
+        @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) { .hero { flex-direction: column; align-items: flex-start; } .stats-row { grid-template-columns: 1fr; } .person-card { grid-template-columns: 1fr; } .actions { flex-direction: row; } }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="hero">
+            <div>
+                <div class="hero-badge">Live rescue command center</div>
+                <h1>Rescue Robot Dashboard</h1>
+                <p>Monitor incoming alerts, prioritize urgent cases, and move a person into the rescued queue with one click.</p>
+            </div>
+            <div class="pill">⚡ Connected to the FastAPI backend</div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Live camera feed</div>
+                    <div class="pill">MJPEG stream</div>
+                </div>
+                <div class="camera-frame">
+                    <img src="{{ url_for('video_feed') }}" alt="Live camera feed">
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="pill">Active alerts</div>
+                        <strong id="active-count">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <div class="pill">Rescued</div>
+                        <strong id="rescued-count">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <div class="pill">System status</div>
+                        <strong id="system-status">Loading</strong>
+                    </div>
+                </div>
+
+                <div class="panel-header section-gap">
+                    <div class="panel-title">Priority queue</div>
+                    <div class="pill">Click rescue to move cards</div>
+                </div>
+                <div id="active-list" class="card-list"></div>
+
+                <div class="panel-header section-gap">
+                    <div class="panel-title">Rescued section</div>
+                    <div class="pill">Completed actions</div>
+                </div>
+                <div id="rescued-list" class="card-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('/api/persons');
+                const data = await response.json();
+                document.getElementById('active-count').textContent = data.active.length;
+                document.getElementById('rescued-count').textContent = data.rescued.length;
+                document.getElementById('system-status').textContent = 'Online';
+                renderList('active-list', data.active, true);
+                renderList('rescued-list', data.rescued, false);
+            } catch (error) {
+                document.getElementById('system-status').textContent = 'Offline';
+                document.getElementById('active-list').innerHTML = '<div class="empty">Unable to reach the backend right now.</div>';
+            }
+        }
+
+        function renderList(containerId, items, isActive) {
+            const container = document.getElementById(containerId);
+            if (!items.length) {
+                container.innerHTML = '<div class="empty">No items yet.</div>';
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const healthClass = `status-${item.health.toLowerCase()}`;
+                const buttons = isActive
+                    ? `<div class="actions"><button class="btn-rescue" onclick="handleAction('${item.person_id}', 'rescue')">Rescue</button><button class="btn-safe" onclick="handleAction('${item.person_id}', 'safe')">Mark safe</button></div>`
+                    : '<div class="actions"><button class="btn-safe" onclick="handleAction(\'' + item.person_id + '\', \'safe\')">Keep safe</button></div>';
+
+                return `
+                    <div class="person-card">
+                        <img src="${item.image_url}" alt="Person ${item.person_id}">
+                        <div class="meta">
+                            <div class="id">Person ID ${item.person_id}</div>
+                            <div class="status ${healthClass}">${item.health}</div>
+                            <div class="timestamp">Updated ${item.timestamp}</div>
+                        </div>
+                        ${buttons}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function handleAction(personId, action) {
+            const response = await fetch(`/api/rescue/${personId}?action=${action}`, { method: 'POST' });
+            if (response.ok) {
+                loadData();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+        setInterval(loadData, 10000);
+    </script>
+</body>
+</html>
